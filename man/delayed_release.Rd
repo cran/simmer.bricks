@@ -2,15 +2,17 @@
 % Please edit documentation in R/delayed_release.R
 \name{delayed_release}
 \alias{delayed_release}
+\alias{delayed_release_selected}
 \title{Delayed Release of a Resource}
 \usage{
-delayed_release(.trj, .env, resource, task, amount = 1, preemptive = FALSE,
+delayed_release(.trj, resource, task, amount = 1, preemptive = FALSE,
+  mon_all = FALSE)
+
+delayed_release_selected(.trj, task, amount = 1, preemptive = FALSE,
   mon_all = FALSE)
 }
 \arguments{
 \item{.trj}{the trajectory object.}
-
-\item{.env}{the simulation environment.}
 
 \item{resource}{the name of the resource.}
 
@@ -18,8 +20,8 @@ delayed_release(.trj, .env, resource, task, amount = 1, preemptive = FALSE,
 callable object (a function) which must return a numeric (negative values are
 automatically coerced to positive).}
 
-\item{amount}{the amount to seize/release, accepts either a numeric or a callable object
-(a function) which must return a numeric.}
+\item{amount}{the amount to seize/release, accepts either a numeric or a callable
+object (a function) which must return a numeric.}
 
 \item{preemptive}{whether arrivals in the server can be preempted or not based
 on seize priorities.}
@@ -37,29 +39,25 @@ and continues its way immediately, but the resource is busy for an additional
 period of time.
 }
 \examples{
-env <- simmer()
-
-## These are equivalent if the resource is non-preemptive:
+## These are equivalent for a non-preemptive resource:
 trajectory() \%>\%
-  delayed_release(env, "res1", 5, 1)
+  delayed_release("res1", 5, 1)
 
 trajectory() \%>\%
   clone(
     2,
     trajectory() \%>\%
-      set_capacity("res1", function()
-        get_capacity(env, "res1") - 1) \%>\%
+      set_capacity("res1", -1, mod="+") \%>\%
       release("res1", 1),
     trajectory() \%>\%
       timeout(5) \%>\%
-      set_capacity("res1", function()
-        get_capacity(env, "res1") + 1)
+      set_capacity("res1", 1, mod="+")
   ) \%>\%
   synchronize(wait=FALSE)
 
-## These are equivalent if the resource is preemptive:
+## These are equivalent for a preemptive resource:
 trajectory() \%>\%
-  delayed_release(env, "res2", 5, 1, preemptive=TRUE)
+  delayed_release("res2", 5, 1, preemptive=TRUE)
 
 trajectory() \%>\%
   clone(
@@ -67,8 +65,7 @@ trajectory() \%>\%
     trajectory() \%>\%
       release("res2", 1),
     trajectory() \%>\%
-      set_prioritization(function()
-        get_prioritization(env) + c(rep(.Machine$integer.max, 2), 0)) \%>\%
+      set_prioritization(c(rep(.Machine$integer.max, 2), 0)) \%>\%
       seize("res2", 1) \%>\%
       timeout(5) \%>\%
       release("res2", 1)

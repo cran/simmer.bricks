@@ -44,9 +44,11 @@ t <- trajectory() %>%
   log_("res1 seized") %>%
   seize("res2") %>%
   log_("res2 seized") %>%
-  delayed_release(env, "res1", 2) %>% # inoperative for 2 units of time
+  # inoperative for 2 units of time
+  delayed_release("res1", 2) %>% 
   log_("res1 released") %>%
-  delayed_release(env, "res2", 5) %>% # inoperative for 5 units of time
+  # inoperative for 5 units of time
+  delayed_release("res2", 5, preemptive=TRUE) %>%
   log_("res1 released")
 
 env %>%
@@ -78,11 +80,13 @@ t <- trajectory() %>%
   seize("room") %>%
   log_("room seized") %>%
   do_parallel(
-    env,
     trajectory("doctor") %>%
-      timeout(1),
+      timeout(1) %>%
+      log_("doctor path done"),
     trajectory("nurse") %>%
-      timeout(2)
+      timeout(2) %>%
+      log_("nurse path done"),
+    .env = env
   ) %>%
   timeout(0.5) %>%
   release("room",1) %>%
@@ -92,4 +96,19 @@ env %>%
   add_resource("room") %>%
   add_generator("visit", t, at(0)) %>%
   run() %>% invisible
+
+## ------------------------------------------------------------------------
+t <- trajectory() %>%
+  interleave(c("A", "B"), c(1, 2))
+
+t
+
+## ------------------------------------------------------------------------
+simmer() %>%
+  add_resource("A", 3, 1) %>%
+  add_resource("B_token", 2, Inf) %>%
+  add_resource("B", 1, 1) %>%
+  add_generator("dummy", t, at(rep(0, 3))) %>%
+  run(4) %>%
+  get_mon_arrivals(per_resource = TRUE)
 

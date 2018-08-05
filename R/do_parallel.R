@@ -5,7 +5,7 @@
 #'
 #' @inheritParams simmer::clone
 #' @inheritParams simmer::get_capacity
-#' @param ... parallel sub-trajectories.
+#' @param ... sub-trajectories or list of sub-trajectories to parallelise.
 #' @param wait if \code{TRUE}, the arrival waits until all parallel sub-trajectories
 #' are finished; if \code{FALSE}, the arrival continues as soon as the first
 #' parallel task ends.
@@ -27,9 +27,9 @@
 #' ## These are equivalent:
 #' trajectory() %>%
 #'   do_parallel(
-#'     env, wait = TRUE,
 #'     task.1,
-#'     task.2
+#'     task.2,
+#'     .env = env, wait = TRUE
 #'   )
 #'
 #' trajectory() %>%
@@ -49,9 +49,9 @@
 #' ## These are equivalent:
 #' trajectory() %>%
 #'   do_parallel(
-#'     env, wait = FALSE,
 #'     task.1,
-#'     task.2
+#'     task.2,
+#'     .env = env, wait = FALSE
 #'   )
 #'
 #' trajectory() %>%
@@ -67,12 +67,12 @@
 #'   wait() %>%
 #'   untrap(signal)
 #'
-do_parallel <- function(.trj, .env, ..., wait=TRUE, mon_all = FALSE) {
-  tasks <- list(...)
+do_parallel <- function(.trj, ..., .env, wait=TRUE, mon_all = FALSE) {
+  tasks <- c(...)
   types <- sapply(tasks, inherits, what="trajectory")
 
   if (!all(types)) {
-    dots <- substitute(list(...))[-1]
+    dots <- substitute(c(...))[-1]
     args <- paste(sapply(dots, deparse)[!types], collapse="', '")
     stop("Arguments '", args, "' are not 'simmer' trajectories")
   }
