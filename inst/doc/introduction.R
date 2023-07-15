@@ -1,8 +1,8 @@
-## ---- echo = FALSE, message = FALSE--------------------------------------
+## ---- echo = FALSE, message = FALSE-------------------------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", 
                       fig.width = 6, fig.height = 4, fig.align = "center")
 
-## ---- message=FALSE------------------------------------------------------
+## ---- message=FALSE-----------------------------------------------------------
 library(simmer)
 
 patient.1 <- trajectory("patients' path") %>%
@@ -19,7 +19,7 @@ patient.1 <- trajectory("patients' path") %>%
   timeout(function() rnorm(1, 5)) %>%
   release("administration", 1)
 
-## ---- message=FALSE------------------------------------------------------
+## ---- message=FALSE-----------------------------------------------------------
 library(simmer.bricks)
 
 patient.2 <- trajectory("patients' path") %>%
@@ -30,11 +30,11 @@ patient.2 <- trajectory("patients' path") %>%
   ## add a planning activity
   visit("administration", function() rnorm(1, 5))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 patient.1
 patient.2
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 env <- simmer() %>%
   add_resource("res1") %>%
   add_resource("res2", preemptive=TRUE)
@@ -49,13 +49,13 @@ t <- trajectory() %>%
   log_("res1 released") %>%
   # inoperative for 5 units of time
   delayed_release("res2", 5, preemptive=TRUE) %>%
-  log_("res1 released")
+  log_("res2 released")
 
 env %>%
   add_generator("dummy", t, at(0, 1)) %>%
   run() %>% invisible
 
-## ---- error=TRUE---------------------------------------------------------
+## ---- error=TRUE--------------------------------------------------------------
 t <- trajectory() %>%
   seize("room") %>%
   clone(
@@ -73,7 +73,7 @@ simmer() %>%
   add_generator("visit", t, at(0)) %>%
   run()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 env <- simmer()
 
 t <- trajectory() %>%
@@ -97,13 +97,13 @@ env %>%
   add_generator("visit", t, at(0)) %>%
   run() %>% invisible
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 t <- trajectory() %>%
   interleave(c("A", "B"), c(1, 2))
 
 t
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 simmer() %>%
   add_resource("A", 3, 1) %>%
   add_resource("B_token", 2, Inf) %>%
